@@ -1,11 +1,12 @@
 from django.shortcuts import render, get_object_or_404
+from django.utils.timezone import now
 from .models import Post, Categorie
 
 
 def index(request):
     categories = Categorie.objects.all()
     posts = Post.objects.order_by('-views')[:6]
-    return render(request, 'blog/index.html', {'categories': categories, 'posts': posts})
+    return render(request, 'blog/index.html', {'categories': categories, 'posts': posts, 'now': now()})
 
 def post_list(request):
     posts = Post.objects.all().order_by('-id')
@@ -20,4 +21,4 @@ def post_detail(request, slug):
 def category_posts(request, slug):
     category = get_object_or_404(Categorie, slug=slug)
     posts = Post.objects.filter(category_id=category)
-    return render(request, 'blog/category_posts.html', {'category': category, 'posts': posts})
+    return render(request, 'blog/blog-list.html', {'category': category, 'posts': posts})
