@@ -1,0 +1,28 @@
+{% extends 'blog/base.html' %}
+
+{% block title %}{{ post.title }} - Blog Post{% endblock %}
+
+{% block content %}
+<article class="blog-post px-3 py-5 p-md-5">
+    <div class="container">
+        <header class="blog-post-header">
+            <h2 class="title mb-2">{{ post.title }}</h2>
+            <div class="meta mb-3">
+                <span class="date">Published {{ post.created_at|date:"F d, Y" }}</span>
+                <span class="time">{{ post.read_time }} min read</span>
+                <span class="comment">{{ post.views }} views</span>
+            </div>
+        </header>
+
+        <div class="blog-post-body">
+            <figure class="blog-banner">
+                <a href="{{ post.thumbnail.url }}"><img class="img-fluid" src="{{ post.thumbnail.url }}" alt="image"></a>
+                <figcaption class="mt-2 text-center image-caption">Image Credit: <a href="https://made4dev.com" target="_blank">made4dev.com (Premium Programming T-shirts)</a></figcaption>
+            </figure>
+            <div class="content">
+                {{ post.content|safe }}
+            </div>
+        </div>
+    </div>
+</article>
+{% endblock %}

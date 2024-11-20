@@ -32,6 +32,8 @@ class Post(models.Model):
     category_id = models.ForeignKey("Categorie", on_delete=models.CASCADE)
     views = models.IntegerField(default=0)
     thumbnail = models.ImageField(upload_to='thumbnails/', null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.title}"

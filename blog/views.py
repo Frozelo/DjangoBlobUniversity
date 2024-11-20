@@ -15,7 +15,7 @@ def post_detail(request, slug):
     post = get_object_or_404(Post, slug=slug)
     post.views += 1
     post.save()
-    return render(request, 'blog/post_detail.html', {'post': post})
+    return render(request, 'blog/blog-post.html', {'post': post})
 
 def category_posts(request, slug):
     category = get_object_or_404(Categorie, slug=slug)

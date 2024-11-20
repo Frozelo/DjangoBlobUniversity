@@ -1,0 +1,33 @@
+{% extends 'blog/base.html' %}
+
+{% block title %}Home - Ivan's Blog{% endblock %}
+
+{% block content %}
+    <section class="cta-section theme-bg-light py-5">
+        <div class="container text-center">
+            <h2 class="heading">Welcome to my Blog</h2>
+            <div class="intro">Explore the latest posts and categories below.</div>
+        </div>
+    </section>
+
+    <section class="blog-list px-3 py-5 p-md-5">
+        <div class="container">
+            {% for post in posts %}
+            <div class="item mb-5">
+                <div class="media">
+                    <img class="mr-3 img-fluid post-thumb d-none d-md-flex" src="{{ post.thumbnail.url }}" alt="image">
+                    <div class="media-body">
+                        <h3 class="title mb-1"><a href="{% url 'post_detail' post.slug %}">{{ post.title }}</a></h3>
+                        <div class="meta mb-1">
+                            <span class="date">Published {{ post.created_at|date:"F d, Y" }}</span>
+                            <span class="time">{{ post.read_time }} min read</span>
+                        </div>
+                        <div class="intro">{{ post.excerpt }}</div>
+                        <a class="more-link" href="{% url 'post_detail' post.slug %}">Read more &rarr;</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+{% endblock %}
