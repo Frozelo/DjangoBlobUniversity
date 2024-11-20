@@ -22,6 +22,7 @@ from webServerUn import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path("blog/", include("blog.urls")),
     path('api/v1/', include("api.blog.urls")),
     path('users/', include("users.urls"))
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
