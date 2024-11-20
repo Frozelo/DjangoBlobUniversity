@@ -37,6 +37,8 @@ class TagAdmin(admin.ModelAdmin):
 
 class PostAdmin(admin.ModelAdmin):
     list_display = ('title', 'slug', 'thumbnail_display', 'views')
+    prepopulated_fields = {'slug': ('title',)}
+
 
     def thumbnail_display(self, obj):
         if obj.thumbnail:
@@ -46,6 +48,10 @@ class PostAdmin(admin.ModelAdmin):
 
     thumbnail_display.short_description = 'Thumbnail'
 
+    def save_model(self, request, obj, form, change):
+        if not obj.slug:
+            obj.slug = obj.title.lower().replace(' ', '-')
+        super().save_model(request, obj, form, change)
 
 
 admin.site.register(Categorie, CategoryAdmin)

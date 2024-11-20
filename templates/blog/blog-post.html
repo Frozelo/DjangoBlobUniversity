@@ -11,18 +11,68 @@
                 <span class="date">Published {{ post.created_at|date:"F d, Y" }}</span>
                 <span class="time">{{ post.read_time }} min read</span>
                 <span class="comment">{{ post.views }} views</span>
+                <span class="total-time">Total view time: {{ post.total_view_time|floatformat:0 }} seconds</span>
             </div>
         </header>
 
         <div class="blog-post-body">
+            {% if post.thumbnail %}
             <figure class="blog-banner">
-                <a href="{{ post.thumbnail.url }}"><img class="img-fluid" src="{{ post.thumbnail.url }}" alt="image"></a>
-                <figcaption class="mt-2 text-center image-caption">Image Credit: <a href="https://made4dev.com" target="_blank">made4dev.com (Premium Programming T-shirts)</a></figcaption>
+                <a href="{{ post.thumbnail.url }}">
+                    <img class="img-fluid" src="{{ post.thumbnail.url }}" alt="Post thumbnail">
+                </a>
             </figure>
+            {% endif %}
+
             <div class="content">
                 {{ post.content|safe }}
             </div>
         </div>
     </div>
 </article>
+
+{% csrf_token %}
+<input type="hidden" id="post-id" value="{{ post.id }}">
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+
+    let startTime = Date.now();
+
+
+    let csrfToken = document.querySelector('[name="csrfmiddlewaretoken"]').value;
+
+
+    function sendViewTime() {
+        let timeSpent = (Date.now() - startTime) / 1000; // Время в секундах
+        let postIdElement = document.getElementById('post-id');
+        let postId = postIdElement ? postIdElement.value : null;
+
+        if (!postId) {
+            console.error("Post ID not found!");
+            return;
+        }
+
+
+        const data = new Blob([JSON.stringify({
+            post_id: postId,
+            view_time: timeSpent
+        })], {type: 'application/json'});
+
+
+        navigator.sendBeacon('/blog/update-view-time/', data);
+    }
+
+
+    setInterval(() => {
+        sendViewTime();
+        startTime = Date.now(); // Сбрасываем начальное время
+    }, 30000);
+
+
+    window.addEventListener('beforeunload', sendViewTime);
+    window.addEventListener('unload', sendViewTime);
+</script>
 {% endblock %}

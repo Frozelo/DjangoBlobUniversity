@@ -22,7 +22,6 @@ class Tag(models.Model):
     slug = models.SlugField(unique=True)
 
     def save(self, *args, **kwargs):
-        # Генерируем slug из title, если он не указан
         if not self.slug:
             self.slug = slugify(self.title)
         super(Tag, self).save(*args, **kwargs)
@@ -41,6 +40,7 @@ class Post(models.Model):
     thumbnail = models.ImageField(upload_to='thumbnails/', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    read_time = models.FloatField(default=0.0)
 
     def save(self, *args, **kwargs):
         if not self.slug:
