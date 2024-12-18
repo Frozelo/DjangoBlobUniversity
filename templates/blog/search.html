@@ -1,0 +1,80 @@
+{% extends 'blog/base.html' %}
+
+{% block title %}Search - Blog{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <form method="get" class="mb-4">
+                <div class="input-group">
+                    <input type="text" name="q" class="form-control"
+                           value="{{ query }}" placeholder="Search posts...">
+                    <button type="submit" class="btn btn-primary">Search</button>
+                </div>
+            </form>
+
+            {% if query %}
+                <h4>Found {{ total_hits }} results for "{{ query }}"</h4>
+
+                {% if response %}
+                    {% for hit in response %}
+                        <article class="card mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <a href="{% url 'blog:post_detail' hit.id %}">
+                                        {% if hit.meta.highlight.title %}
+                                            {{ hit.meta.highlight.title.0|safe }}
+                                        {% else %}
+                                            {{ hit.title }}
+                                        {% endif %}
+                                    </a>
+                                </h5>
+
+                                {% if hit.meta.highlight.content %}
+                                    <p class="card-text">
+                                        ...{{ hit.meta.highlight.content.0|safe }}...
+                                    </p>
+                                {% endif %}
+
+                                <div class="meta text-muted">
+                                    <small>
+                                        By {{ hit.author.username }} |
+                                        {{ hit.created_at|date:"F d, Y" }} |
+                                        {{ hit.read_time }} min read |
+                                        {{ hit.views }} views
+                                    </small>
+                                </div>
+                            </div>
+                        </article>
+                    {% empty %}
+                        <p>No results found.</p>
+                    {% endfor %}
+
+                    {% if total_hits > 10 %}
+                        <nav aria-label="Search results pages">
+                            <ul class="pagination">
+                                {% if page > 1 %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?q={{ query }}&page={{ page|add:'-1' }}">
+                                            Previous
+                                        </a>
+                                    </li>
+                                {% endif %}
+
+                                {% if total_hits > page|add:'9' %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?q={{ query }}&page={{ page|add:'1' }}">
+                                            Next
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    {% endif %}
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

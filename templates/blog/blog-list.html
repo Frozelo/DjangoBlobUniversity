@@ -3,47 +3,111 @@
 {% block title %}Home - Ivan's Blog{% endblock %}
 
 {% block content %}
-
 <div class="main-wrapper">
 
     <section class="blog-list px-3 py-5 p-md-5">
         <div class="container">
-            {% for post in posts %}
-            <div class="item mb-5">
-                <div class="media">
-                    <img class="mr-3 img-fluid post-thumb d-none d-md-flex" src="{{ post.thumbnail.url }}" alt="image">
-                    <div class="media-body">
-                        <h3 class="title mb-1"><a href="{% url 'post_detail' post.slug %}">{{ post.title }}</a></h3>
-                        <div class="meta mb-1">
-                            <span class="date">Published {{ post.created_at|date:"F d, Y" }}</span>
-                            <span class="time">{{ post.read_time }} min read</span>
-                        </div>
-                        <div class="intro">{{ post.excerpt }}</div>
-                        <a class="more-link" href="{% url 'post_detail' post.slug %}">Read more &rarr;</a>
-                    </div>
+            <!-- Фильтр по тегам -->
+            <div class="filter-wrapper mb-4 p-3 border rounded shadow-sm">
+                <h5 class="mb-3">Filter by Tags:</h5>
+                <div class="tags">
+                    {% for tag in tags %}
+                    <label class="mr-3 mb-2">
+                        <input type="checkbox" class="tag-filter" value="{{ tag.slug }}">
+                        <span class="badge badge-pill badge-secondary">{{ tag.title }}</span>
+                    </label>
+                    {% endfor %}
                 </div>
+                <button id="filter-button" class="btn btn-primary mt-3">Apply Filter</button>
             </div>
 
-
+            <!-- Список постов -->
+            <div id="post-list">
+                {% for post in posts %}
+                <div class="item mb-5">
+                    <div class="media">
+                        <img class="mr-3 img-fluid post-thumb d-none d-md-flex"
+                             src="{{ post.thumbnail.url }}"
+                             alt="{{ post.title }}">
+                        <div class="media-body">
+                            <h3 class="title mb-1">
+                                <a href="{% url 'post_detail' post.slug %}">{{ post.title }}</a>
+                            </h3>
+                            <div class="meta mb-1">
+                                <span class="date">Published {{ post.created_at|date:"F d, Y" }}</span>
+                                <span class="time">{{ post.read_time }} min read</span>
+                            </div>
+                            <div class="intro">{{ post.excerpt }}</div>
+                            <a class="more-link" href="{% url 'post_detail' post.slug %}">
+                                Read more &rarr;
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
         </div>
-        {% endfor %}
     </section>
 
 </div>
 
+<!-- Скрипты -->
+<script src="assets/plugins/jquery-3.3.1.min.js"></script>
+<script src="assets/plugins/popper.min.js"></script>
+<script src="assets/plugins/bootstrap/js/bootstrap.min.js"></script>
 
-    <!-- Javascript -->
-    <script src="assets/plugins/jquery-3.3.1.min.js"></script>
-    <script src="assets/plugins/popper.min.js"></script>
-    <script src="assets/plugins/bootstrap/js/bootstrap.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const checkboxes = document.querySelectorAll('.tag-filter');
+    const postList = document.getElementById('post-list');
+    const filterButton = document.getElementById('filter-button');
 
-    <!-- Style Switcher (REMOVE ON YOUR PRODUCTION SITE) -->
-    <script src="assets/js/demo/style-switcher.js"></script>
+    filterButton.addEventListener('click', () => {
+        const selectedTags = Array.from(checkboxes)
+            .filter(cb => cb.checked)
+            .map(cb => cb.value);
 
+        if (selectedTags.length === 0) {
+            alert('Please select at least one tag to filter.');
+            return;
+        }
 
-    </body>
-    </html>
+        // Отправляем запрос на сервер для фильтрации по тегам
+        fetch(`/blog/filter_posts_by_tags/?tags=${selectedTags.join(',')}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    postList.innerHTML = '';
+                    data.posts.forEach(post => {
+                        postList.innerHTML += `
+                            <div class="item mb-5">
+                                <div class="media">
+                                    <img class="mr-3 img-fluid post-thumb d-none d-md-flex" src="${post.thumbnail}" alt="${post.title}">
+                                    <div class="media-body">
+                                        <h3 class="title mb-1">
+                                            <a href="/post/${post.slug}">${post.title}</a>
+                                        </h3>
+                                        <div class="meta mb-1">
+                                            <span class="date">Published ${new Date(post.created_at).toLocaleDateString()}</span>
+                                            <span class="time">${post.read_time} min read</span>
+                                        </div>
+                                        <div class="intro">${post.description}</div>
+                                        <a class="more-link" href="/post/${post.slug}">Read more &rarr;</a>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    postList.innerHTML = '<p>No posts found.</p>';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching posts:', error);
+                alert('An error occurred while fetching posts.');
+            });
+    });
+});
+</script>
 
-
-	{% endblock %}
-
+{% endblock %}

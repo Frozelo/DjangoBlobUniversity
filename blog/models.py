@@ -1,6 +1,10 @@
 from django.db import models
 from django.utils.text import slugify
+from django.dispatch import receiver
 from ckeditor.fields import RichTextField
+from django.db.models.signals import post_save
+
+
 
 class Categorie(models.Model):
     title = models.CharField(max_length=255)
@@ -30,6 +34,7 @@ class Tag(models.Model):
         return f"{self.title}"
 
 
+
 class Post(models.Model):
     title = models.CharField(max_length=255)
     slug = models.SlugField(unique=True, blank=True)
@@ -37,6 +42,7 @@ class Post(models.Model):
     content = RichTextField(null=True)
     category_id = models.ForeignKey("Categorie", on_delete=models.CASCADE)
     views = models.IntegerField(default=0)
+    tags = models.ManyToManyField("Tag")
     thumbnail = models.ImageField(upload_to='thumbnails/', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -50,7 +56,3 @@ class Post(models.Model):
     def __str__(self):
         return f"{self.title}"
 
-
-class PostTagRelation(models.Model):
-    tag_id = models.ForeignKey("Tag", on_delete=models.CASCADE)
-    post_id = models.ForeignKey("Post", on_delete=models.CASCADE)

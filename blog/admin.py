@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Categorie, Tag, Post, PostTagRelation
+from .models import Categorie, Tag, Post
 
 
 class CategoryAdmin(admin.ModelAdmin):
@@ -57,4 +57,3 @@ class PostAdmin(admin.ModelAdmin):
 admin.site.register(Categorie, CategoryAdmin)
 admin.site.register(Tag, TagAdmin)
 admin.site.register(Post, PostAdmin)
-admin.site.register(PostTagRelation)

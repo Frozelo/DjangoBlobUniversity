@@ -1,33 +1,142 @@
 {% extends 'blog/base.html' %}
 
+{% load static %}
+
 {% block title %}Home - Ivan's Blog{% endblock %}
 
 {% block content %}
-    <section class="cta-section theme-bg-light py-5">
+    <section class="cta-section bg-light py-5">
         <div class="container text-center">
-            <h2 class="heading">Welcome to my Blog</h2>
-            <div class="intro">Explore the latest posts and categories below.</div>
+            <h2 class="display-4">Welcome to my Blog</h2>
+            <p class="lead">Explore the latest posts and categories below.</p>
         </div>
     </section>
 
-    <section class="blog-list px-3 py-5 p-md-5">
+    <!-- Форма поиска и фильтрации -->
+    <section class="search-filter-section py-4">
         <div class="container">
-            {% for post in posts %}
-            <div class="item mb-5">
-                <div class="media">
-                    <img class="mr-3 img-fluid post-thumb d-none d-md-flex" src="{{ post.thumbnail.url }}" alt="image">
-                    <div class="media-body">
-                        <h3 class="title mb-1"><a href="{% url 'post_detail' post.slug %}">{{ post.title }}</a></h3>
-                        <div class="meta mb-1">
-                            <span class="date">Published {{ post.created_at|date:"F d, Y" }}</span>
-                            <span class="time">{{ post.read_time }} min read</span>
-                        </div>
-                        <div class="intro">{{ post.excerpt }}</div>
-                        <a class="more-link" href="{% url 'post_detail' post.slug %}">Read more &rarr;</a>
-                    </div>
+            <form method="get" action="" class="form-row align-items-center">
+                <!-- Поисковый бар -->
+                <div class="col-12 col-md-4 mb-2">
+                    <input type="text" name="q" class="form-control" placeholder="Search..." value="{{ query }}">
                 </div>
-            </div>
-            {% endfor %}
+
+                <!-- Фильтр по тегам -->
+                <div class="col-12 col-md-6 mb-2">
+                    <fieldset>
+                        <legend class="sr-only">Filter by tags</legend>
+                        <div class="d-flex flex-wrap align-items-center">
+                            <label class="mr-2 mb-2 mb-md-0">Filter by tags:</label>
+                            <div class="form-check form-check-inline mr-2">
+                                <input type="checkbox" class="form-check-input" id="select-all-tags" onclick="toggleSelectAll(this)">
+                                <label class="form-check-label" for="select-all-tags">Select All</label>
+                            </div>
+                            {% for tag in tags %}
+                                <div class="form-check form-check-inline">
+                                    <input type="checkbox" class="form-check-input" name="tags" value="{{ tag.slug }}"
+                                           id="tag-{{ tag.id }}"
+                                           {% if tag.slug in request.GET.tags %}checked{% endif %}>
+                                    <label class="form-check-label" for="tag-{{ tag.id }}">{{ tag.title }}</label>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </fieldset>
+                </div>
+
+                <!-- Кнопки поиска и сброса -->
+                <div class="col-12 col-md-2 text-md-right">
+                    <button type="submit" class="btn btn-primary btn-block mb-2">Search</button>
+                    <a href="{% url 'index' %}" class="btn btn-secondary btn-block">Reset</a>
+                </div>
+            </form>
         </div>
     </section>
+
+    <!-- Список блогов -->
+    <section class="blog-list py-5">
+        <div class="container">
+            {% if posts %}
+                <div class="row">
+                    {% for post in posts %}
+                        <div class="col-12 col-md-6 col-lg-4 mb-4">
+                            <div class="card h-100 shadow-sm">
+                                {% if post.thumbnail %}
+                                    <img src="{{ post.thumbnail.url }}" class="card-img-top" alt="{{ post.title }}">
+                                {% else %}
+                                    <img src="{% static 'assets/images/default-thumbnail.jpg' %}" class="card-img-top" alt="Default Thumbnail">
+                                {% endif %}
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title"><a href="{% url 'post_detail' post.slug %}" class="text-dark">{{ post.title }}</a></h5>
+                                    <p class="card-text">{{ post.description }}</p>
+                                    <div class="mt-auto">
+                                        <div class="meta mb-2 text-muted">
+                                            <span class="date">Published {{ post.created_at|date:"F d, Y" }}</span>
+                                            <span class="time ml-3">{{ post.read_time }} min read</span>
+                                        </div>
+                                        <a href="{% url 'post_detail' post.slug %}" class="btn btn-sm btn-outline-primary">Read more &rarr;</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Пагинация -->
+                {% if is_paginated %}
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?{% if query %}q={{ query }}&{% endif %}{% for tag_slug in request.GET.tags %}tags={{ tag_slug }}&{% endfor %}page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                                        <span aria-hidden="true">&laquo;</span>
+                                        <span class="sr-only">Previous</span>
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link" aria-hidden="true">&laquo;</span>
+                                </li>
+                            {% endif %}
+
+                            {% for num in paginator.page_range %}
+                                {% if num == page_obj.number %}
+                                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                    <li class="page-item"><a class="page-link" href="?{% if query %}q={{ query }}&{% endif %}{% for tag_slug in request.GET.tags %}tags={{ tag_slug }}&{% endfor %}page={{ num }}">{{ num }}</a></li>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?{% if query %}q={{ query }}&{% endif %}{% for tag_slug in request.GET.tags %}tags={{ tag_slug }}&{% endfor %}page={{ page_obj.next_page_number }}" aria-label="Next">
+                                        <span aria-hidden="true">&raquo;</span>
+                                        <span class="sr-only">Next</span>
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link" aria-hidden="true">&raquo;</span>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+            {% else %}
+                <div class="alert alert-info text-center" role="alert">
+                    No posts found.
+                </div>
+            {% endif %}
+        </div>
+    </section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function toggleSelectAll(source) {
+        const checkboxes = document.querySelectorAll('input[name="tags"]');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = source.checked;
+        });
+    }
+</script>
 {% endblock %}

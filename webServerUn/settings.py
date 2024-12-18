@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "ckeditor",
     'corsheaders',
+    'django_elasticsearch_dsl',
 
     "blog",
     "users"
@@ -61,8 +62,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'thumbnails')
 
 ROOT_URLCONF = 'webServerUn.urls'
 
-
-
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -78,6 +77,18 @@ TEMPLATES = [
         },
     },
 ]
+
+ELASTICSEARCH_DSL = {
+    'default': {
+        'hosts': 'http://localhost:9200'
+    },
+}
+
+ELASTICSEARCH_DSL_INDEX_SETTINGS = {
+    'number_of_shards': 1,
+    'number_of_replicas': 0
+}
+
 
 WSGI_APPLICATION = 'webServerUn.wsgi.application'
 
